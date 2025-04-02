@@ -19,8 +19,6 @@ class TicketControl {
         this.init();
     }
 
-
-
     get toJson() {
         return {
             ultimo: this.ultimo,
@@ -30,55 +28,53 @@ class TicketControl {
         }
     }
 
-init() {
-    const { hoy, tickets, ultimo, ultimos4 } = require('../db/data.json');
-    if ( hoy === this.hoy ) {
-        this. tickets = tickets;
-        this.ultimo = ultimo;
-        this.ultimos4 = ultimos4;
-    } else {
+    init() {
+        const { hoy, tickets, ultimo, ultimos4 } = require('../db/data.json');
+        if ( hoy === this.hoy ) {
+            this. tickets = tickets;
+            this.ultimo = ultimo;
+            this.ultimos4 = ultimos4;
+        } else {
+            //OTro dia
+            this.guardarDB();
+        }
+    }
+
+    guardarDB() {
+        const dbPath = path. join( __dirname, '../db/data.json');
+        fs.writeFileSync( dbPath, JSON.stringify( this.toJson ) );
+    }
+
+    siguiente() {
+        this.ultimo += 1;
+        const ticket = new Ticket( this.ultimo, null);
+        this.tickets.push( ticket );
+
         this.guardarDB();
-    }
-}
-
-guardarDB() {
-    const dbPath = path. join( __dirname, '../db/data.json');
-    fs.writeFileSync( dbPath, JSON.stringify( this.toJson ) );
-}
-
-siguiente() {
-    this.ultimo += 1;
-    const ticket = new Ticket( this.ultimo, null);
-    this.tickets.push( ticket );
-
-    this.guardarDB();
-    return 'Ticket' + ticket.numero;
-}
-
-atenderTicket( escritorio ){
-
-    //No tenemos tickets
-    if (this.tickets.length === 0){
-        return null;
+        return 'Ticket' + ticket.numero;
     }
 
-    const ticket = this.tickets.shift();// this.tickets[0];
-    ticket.escritorio = escritorio;
+    atenderTicket( escritorio ){
 
-    this.ultimos4.unshift( ticket );
+        //No tenemos tickets
+        if (this.tickets.length === 0){
+            return null;
+        }
 
-    if ( this.ultimos4.length > 4) {
-        this.ultimos4.splice(-1.1);
+        const ticket = this.tickets.shift();// this.tickets[0];
+        ticket.escritorio = escritorio;
+
+        this.ultimos4.unshift( ticket );
+
+        if ( this.ultimos4.length > 4) {
+            this.ultimos4.splice(-1.1);
+        }
+
+        this.guardarDB();
+
+        return ticket;
     }
 
-    this.guardarDB();
-
-    return ticket;
 }
-
-
-}
-
-
 
 module.exports = TicketControl;

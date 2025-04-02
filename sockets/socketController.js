@@ -3,8 +3,17 @@ const ticketControl = new TicketControl();
 
 const socketController = (socket) => { 
     
-    console.log('🟢 Cliente conectado: ', socket.handshake.headers['sec-ch-ua']);
+    console.log('🟢 Cliente conectado: ', + socket.id);
+    socket.emit('ultimo-ticket', ticketControl.ultimo);
 
+    socket.on('siguiente-ticket', (payload, callback)=> {
+        console.log('🎫 -> siguiente-ticket ', payload);
+
+        const siguiente = ticketControl.siguiente();
+        callback(siguiente);
+
+        socket.broadcast.emit('tickets-pendientes', ticketControl.tickets.length);
+    });
 
     socket.on('disconnect', ()=> {
         console.log('Ciente desconectado 🔴', socket.id);
